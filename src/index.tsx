@@ -1,7 +1,12 @@
 import { NativeModules } from 'react-native';
 
 type PaymentPassType = {
-  multiply(a: number, b: number): Promise<number>;
+  canAddPaymentPass: (paymentRefrenceId: string) => Promise<void>;
+  addPaymentPass: (
+    cardHolderName: string,
+    lastFour: string,
+    paymentReferenceId: string
+  ) => Promise<void>;
 };
 
 const { PaymentPass } = NativeModules;
