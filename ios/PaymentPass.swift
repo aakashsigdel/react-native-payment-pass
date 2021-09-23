@@ -27,13 +27,14 @@ class PaymentPass: NSObject {
       resolve(["status": "BLOCKED"])
     }
   }
-
-  @objc(addPaymentPass:lastFour:paymentReferenceId:resolve:rejecter:)
-  func addPaymentPass(_ cardHolderName: String, lastFour: String, paymentRefrenceId: String = "", resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
+  
+  @objc(addPaymentPass:lastFour:paymentReferenceId:errorCallback:successCallback:)
+  func addPaymentPass(_ cardHolderName: String, lastFour: String, paymentRefrenceId: String = "", errorCallback: RCTResponseSenderBlock, successCallback: @escaping RCTResponseSenderBlock) -> Void {
+    pkRequestCallback = successCallback
     DispatchQueue.main.async {
       let rootViewController = UIApplication.shared.delegate?.window??.rootViewController
       guard let requestConfiguration = PKAddPaymentPassRequestConfiguration(encryptionScheme: .ECC_V2) else {
-        resolve(["status": "BLOCKED"])
+//        resolve(["status": "BLOCKED"])
         return
       }
       requestConfiguration.cardholderName = cardHolderName
@@ -50,6 +51,18 @@ class PaymentPass: NSObject {
       }
       rootViewController?.present(addPaymentPassViewController, animated: true, completion: nil)
     }
+  }
+  @objc(finalizeAddCard:activationData:ephemeralPublicKey:resolve:reject:)
+  func finalizeAddCard(_ encryptedPassData: String, activationData: String, ephemeralPublicKey: String, reslove: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
+    let addPaymentPassRequest = PKAddPaymentPassRequest()
+    addPaymentPassRequest.encryptedPassData = Data(base64Encoded: encryptedPassData)
+    addPaymentPassRequest.activationData = Data(base64Encoded: activationData)
+    addPaymentPassRequest.ephemeralPublicKey = Data(base64Encoded: ephemeralPublicKey)
+
+    pkCompletionHandler!(addPaymentPassRequest)
+    pkCompletionHandler = nil
+    pkRequestCallback = nil
+    reslove(nil)
   }
 }
 
@@ -73,11 +86,6 @@ struct DigitalWalletProvisionRequestCreationResponse: Codable {
   let ephemeralPublicKey: Data
 }
 
-// TODO: remove these
-let programBaseURL = "hello123"
-let cardToken = "hello"
-let urlRequest = URL(string: "https://google.com")!
-
 extension PaymentPass: PKAddPaymentPassViewControllerDelegate {
   func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, didFinishAdding pass: PKPaymentPass?, error: Error?) {
     controller.dismiss(animated: true, completion: nil)
@@ -89,52 +97,64 @@ extension PaymentPass: PKAddPaymentPassViewControllerDelegate {
                                     nonceSignature: Data,
                                     completionHandler handler: @escaping (PKAddPaymentPassRequest) -> Void)
   {
+    pkCompletionHandler = handler
     let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
-    let requestBody = DigitalWalletProvisionRequestCreationRequest(cardToken: cardToken,
-                                                                   deviceType: .mobilePhone,
-                                                                   provisioningAppVersion: appVersion,
-                                                                   certificates: certificates,
-                                                                   nonce: nonce,
-                                                                   nonceSignature: nonceSignature)
-    var urlRequest = URLRequest(url: URL(string: "https://\(programBaseURL)/v3/digitalwalletprovisionrequests/applepay")!)
-    urlRequest.httpMethod = "POST"
-    let encoder = JSONEncoder()
-    encoder.keyEncodingStrategy = .convertToSnakeCase
-    encoder.dataEncodingStrategy = .base64
-    urlRequest.httpBody = try! encoder.encode(requestBody)
-
-    let dataTask = URLSession.shared.dataTask(with: urlRequest, completionHandler: { data, response, error in
-    guard error == nil,
-    let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200,
-    let data = data else {
-      // handle error
-      print("error on http response data")
-      return
+    var certArray: [String] = []
+    for cert in certificates {
+      certArray.append(cert.base64EncodedString())
     }
-    do {
-      let responseBody = try self.decodeResponse(data: data)
-      let addPaymentPassRequest = self.createAddPaymentRequest(responseBody: responseBody)
-      handler(addPaymentPassRequest)
-    } catch {
-      // handle error
-      print("hello erroring out")
-    }
-  })
-    dataTask.resume()
-  }
 
-  func decodeResponse(data: Data) throws -> DigitalWalletProvisionRequestCreationResponse {
-    let decoder = JSONDecoder()
-    decoder.dataDecodingStrategy = .base64
-    decoder.dateDecodingStrategy = .iso8601
-    return try decoder.decode(DigitalWalletProvisionRequestCreationResponse.self, from: data)
+    pkRequestCallback!([["certificates": certArray, "nonce": nonce.base64EncodedString(), "nonceSignature": nonceSignature.base64EncodedString(), "appVersion": appVersion]])
+//    let requestBody = DigitalWalletProvisionRequestCreationRequest(cardToken: cardToken,
+//                                                                   deviceType: .mobilePhone,
+//                                                                   provisioningAppVersion: appVersion,
+//                                                                   certificates: certificates,
+//                                                                   nonce: nonce,
+//                                                                   nonceSignature: nonceSignature)
+//    var urlRequest = URLRequest(url: URL(string: "https://\(programBaseURL)/marqeta_digital_wallet_provision_request/apple_pay")!)
+//    urlRequest.httpMethod = "POST"
+//    let encoder = JSONEncoder()
+//    encoder.keyEncodingStrategy = .convertToSnakeCase
+//    encoder.dataEncodingStrategy = .base64
+//    encoder.outputFormatting = .prettyPrinted
+//    let me = try! encoder.encode(requestBody)
+//    print("topai")
+//    print(String(data: me, encoding: .utf8)!)
+//    print("mopai")
+//
+//    let dataTask = URLSession.shared.dataTask(with: urlRequest, completionHandler: { data, response, error in
+//    guard error == nil,
+//    let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200,
+//    let data = data else {
+//      // handle error
+//      print("error on http response data")
+//      return
+//    }
+//    do {
+//      let responseBody = try self.decodeResponse(data: data)
+//      let addPaymentPassRequest = self.createAddPaymentRequest(responseBody: responseBody)
+//      handler(addPaymentPassRequest)
+//
+//    } catch {
+//      // handle error
+//      print("hello erroring out")
+//    }
+//  })
+//    dataTask.resume()
   }
-
-  func createAddPaymentRequest(responseBody: DigitalWalletProvisionRequestCreationResponse) -> PKAddPaymentPassRequest {
-    let addPaymentPassRequest = PKAddPaymentPassRequest()
-    addPaymentPassRequest.encryptedPassData = responseBody.encryptedPassData
-    addPaymentPassRequest.activationData = responseBody.activationData
-    addPaymentPassRequest.ephemeralPublicKey = responseBody.ephemeralPublicKey
-    return addPaymentPassRequest
-  }
+  
+//  func decodeResponse(data: Data) throws -> DigitalWalletProvisionRequestCreationResponse {
+//    let decoder = JSONDecoder()
+//    decoder.dataDecodingStrategy = .base64
+//    decoder.dateDecodingStrategy = .iso8601
+//    return try decoder.decode(DigitalWalletProvisionRequestCreationResponse.self, from: data)
+//  }
+//
+//  func createAddPaymentRequest(responseBody: DigitalWalletProvisionRequestCreationResponse) -> PKAddPaymentPassRequest {
+//    let addPaymentPassRequest = PKAddPaymentPassRequest()
+//    addPaymentPassRequest.encryptedPassData = responseBody.encryptedPassData
+//    addPaymentPassRequest.activationData = responseBody.activationData
+//    addPaymentPassRequest.ephemeralPublicKey = responseBody.ephemeralPublicKey
+//    return addPaymentPassRequest
+//  }
 }
