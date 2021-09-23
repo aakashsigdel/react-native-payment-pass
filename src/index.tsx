@@ -24,6 +24,11 @@ type PaymentPassType = {
     errorCallback: () => void,
     successCallback: (params: DigitalWalletProvisionRequestParams) => void
   ) => Promise<void>;
+  finalizeAddCard: (
+    encryptedPassData: string,
+    activationData: string,
+    ephemeralPublicKey: string
+  ) => Promise<void>;
 };
 
 const { PaymentPass } = NativeModules;
