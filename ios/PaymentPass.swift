@@ -5,9 +5,7 @@ import PassKit
 // CAN_ADD -> show add to apple wallet
 // ALREADY_ADDED -> show card has already been added to apple wallet
 // BLOCKED -> hide add to apple wallet
-// type PaymentPassQueryResult {
-//   status: 'CAN_ADD' | 'ALREADY_ADDED' | 'BLOCKED'
-// }
+// type PaymentPassQueryResult = 'CAN_ADD' | 'ALREADY_ADDED' | 'BLOCKED'
 
 @objc(PaymentPass)
 class PaymentPass: NSObject {
@@ -19,12 +17,12 @@ class PaymentPass: NSObject {
   func canAddPaymentPass(_ paymentRefrenceId: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
     if PKAddPaymentPassViewController.canAddPaymentPass() {
       if PKPassLibrary().canAddPaymentPass(withPrimaryAccountIdentifier: paymentRefrenceId) {
-        resolve(["status": "CAN_ADD"])
+        resolve("CAN_ADD")
       } else {
-        resolve(["status": "ALREADY_ADDED"])
+        resolve("ALREADY_ADDED")
       }
     } else {
-      resolve(["status": "BLOCKED"])
+      resolve("BLOCKED")
     }
   }
   
