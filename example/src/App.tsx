@@ -1,13 +1,13 @@
 import * as React from 'react';
 
 import { StyleSheet, View, Text } from 'react-native';
-import PaymentPass from 'react-native-payment-pass';
+// import PaymentPass from 'react-native-payment-pass';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
+  const [result] = React.useState<number | undefined>();
 
   React.useEffect(() => {
-    PaymentPass.multiply(3, 7).then(setResult);
+    // PaymentPass.multiply(3, 7).then(setResult);
   }, []);
 
   return (
