@@ -4,15 +4,21 @@ export declare enum AddPaymentPassStatus {
     BLOCKED = "BLOCKED"
 }
 export interface DigitalWalletProvisionRequestParams {
+    device_type: string;
     certificates: string[];
     nonce: string;
-    nonceSignature: string;
-    appVersion: string;
+    nonce_signature: string;
+    app_version: string;
 }
+declare type CanAddPaymentPass = (paymentRefrenceId: string) => Promise<AddPaymentPassStatus>;
+declare type AddPaymentPass = (cardHolderName: string, lastFour: string, paymentReferenceId: string, errorCallback: () => void, successCallback: (params: DigitalWalletProvisionRequestParams) => void) => Promise<void>;
+declare type FinalizeAddCard = (encryptedPassData: string, activationData: string, ephemeralPublicKey: string) => Promise<void>;
+declare type RemoveSuspendedCard = (paymentReferenceId: string) => Promise<void>;
 declare type PaymentPassType = {
-    canAddPaymentPass: (paymentRefrenceId: string) => Promise<AddPaymentPassStatus>;
-    addPaymentPass: (cardHolderName: string, lastFour: string, paymentReferenceId: string, errorCallback: () => void, successCallback: (params: DigitalWalletProvisionRequestParams) => void) => Promise<void>;
-    finalizeAddCard: (encryptedPassData: string, activationData: string, ephemeralPublicKey: string) => Promise<void>;
+    canAddPaymentPass: CanAddPaymentPass;
+    addPaymentPass: AddPaymentPass;
+    finalizeAddCard: FinalizeAddCard;
+    removeSuspendedCard: RemoveSuspendedCard;
 };
 declare const _default: PaymentPassType;
 export default _default;
