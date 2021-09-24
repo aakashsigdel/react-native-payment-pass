@@ -22,4 +22,10 @@ RCT_EXTERN_METHOD(
                   resolve: (RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject
                   )
+
+RCT_EXTERN_METHOD(
+                  removeSuspendedCard: (NSString *) paymentReferenceId
+                  resolve: (RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject
+                  )
 @end

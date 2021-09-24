@@ -7,28 +7,38 @@ export enum AddPaymentPassStatus {
 }
 
 export interface DigitalWalletProvisionRequestParams {
+  device_type: string;
   certificates: string[];
   nonce: string;
-  nonceSignature: string;
-  appVersion: string;
+  nonce_signature: string;
+  app_version: string;
 }
 
+type CanAddPaymentPass = (
+  paymentRefrenceId: string
+) => Promise<AddPaymentPassStatus>;
+
+type AddPaymentPass = (
+  cardHolderName: string,
+  lastFour: string,
+  paymentReferenceId: string,
+  errorCallback: () => void,
+  successCallback: (params: DigitalWalletProvisionRequestParams) => void
+) => Promise<void>;
+
+type FinalizeAddCard = (
+  encryptedPassData: string,
+  activationData: string,
+  ephemeralPublicKey: string
+) => Promise<void>;
+
+type RemoveSuspendedCard = (paymentReferenceId: string) => Promise<void>;
+
 type PaymentPassType = {
-  canAddPaymentPass: (
-    paymentRefrenceId: string
-  ) => Promise<AddPaymentPassStatus>;
-  addPaymentPass: (
-    cardHolderName: string,
-    lastFour: string,
-    paymentReferenceId: string,
-    errorCallback: () => void,
-    successCallback: (params: DigitalWalletProvisionRequestParams) => void
-  ) => Promise<void>;
-  finalizeAddCard: (
-    encryptedPassData: string,
-    activationData: string,
-    ephemeralPublicKey: string
-  ) => Promise<void>;
+  canAddPaymentPass: CanAddPaymentPass;
+  addPaymentPass: AddPaymentPass;
+  finalizeAddCard: FinalizeAddCard;
+  removeSuspendedCard: RemoveSuspendedCard;
 };
 
 const { PaymentPass } = NativeModules;
