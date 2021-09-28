@@ -3,6 +3,12 @@ import PassKit
 
 @objc(PaymentPass)
 class PaymentPass: NSObject {
+    var pkRequestCallback: RCTResponseSenderBlock?;
+    var pkCompletionHandler: ((PKAddPaymentPassRequest) -> Void)?;
+    
+    override init() {
+        
+    }
   @objc static func requiresMainQueueSetup() -> Bool {
     return false
   }
@@ -21,12 +27,12 @@ class PaymentPass: NSObject {
   }
   
   @objc(addPaymentPass:lastFour:paymentReferenceId:errorCallback:successCallback:)
-  func addPaymentPass(_ cardHolderName: String, lastFour: String, paymentRefrenceId: String = "", errorCallback: RCTResponseSenderBlock, successCallback: @escaping RCTResponseSenderBlock) -> Void {
+  func addPaymentPass(_ cardHolderName: String, lastFour: String, paymentRefrenceId: String = "", errorCallback: @escaping RCTResponseSenderBlock, successCallback: @escaping RCTResponseSenderBlock) -> Void {
     pkRequestCallback = successCallback
     DispatchQueue.main.async {
       let rootViewController = UIApplication.shared.delegate?.window??.rootViewController
       guard let requestConfiguration = PKAddPaymentPassRequestConfiguration(encryptionScheme: .ECC_V2) else {
-        errorCallback("BLOCKED")
+        errorCallback(["BLOCKED"])
         return
       }
       requestConfiguration.cardholderName = cardHolderName
@@ -38,7 +44,7 @@ class PaymentPass: NSObject {
       }
       guard let addPaymentPassViewController = PKAddPaymentPassViewController(requestConfiguration:
                                                                                 requestConfiguration, delegate: self) else {
-        errorCallback("BLOCKED")
+        errorCallback(["BLOCKED"])
         return
       }
       rootViewController?.present(addPaymentPassViewController, animated: true, completion: nil)
@@ -59,7 +65,7 @@ class PaymentPass: NSObject {
   }
   
   @objc(removeSuspendedCard:resolve:reject:)
-  func removeSuspendedCard(_ panReferenceId: String, reslove: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
+  func removeSuspendedCard(_ panReferenceId: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
     let passLibrary = PKPassLibrary()
     let allPaymentPasses = passLibrary.passes(of: .payment).compactMap({$0 as? PKPaymentPass}) + passLibrary.remotePaymentPasses()
     let passesToRemove = allPaymentPasses.filter({$0.primaryAccountIdentifier == panReferenceId})
