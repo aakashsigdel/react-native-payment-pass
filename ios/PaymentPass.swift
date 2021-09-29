@@ -1,14 +1,13 @@
 import Foundation
 import PassKit
 
+var pkRequestCallback: RCTResponseSenderBlock?;
+var pkCompletionHandler: ((PKAddPaymentPassRequest) -> Void)?;
+
 @objc(PaymentPass)
 class PaymentPass: NSObject {
-    var pkRequestCallback: RCTResponseSenderBlock?;
-    var pkCompletionHandler: ((PKAddPaymentPassRequest) -> Void)?;
-    
-    override init() {
-        
-    }
+  override init() {}
+
   @objc static func requiresMainQueueSetup() -> Bool {
     return false
   }
@@ -25,7 +24,7 @@ class PaymentPass: NSObject {
       resolve("BLOCKED")
     }
   }
-  
+
   @objc(addPaymentPass:lastFour:paymentReferenceId:errorCallback:successCallback:)
   func addPaymentPass(_ cardHolderName: String, lastFour: String, paymentRefrenceId: String = "", errorCallback: @escaping RCTResponseSenderBlock, successCallback: @escaping RCTResponseSenderBlock) -> Void {
     pkRequestCallback = successCallback
@@ -50,9 +49,9 @@ class PaymentPass: NSObject {
       rootViewController?.present(addPaymentPassViewController, animated: true, completion: nil)
     }
   }
-    
-  @objc(finalizeAddCard:activationData:ephemeralPublicKey:resolve:reject:)
-  func finalizeAddCard(_ encryptedPassData: String, activationData: String, ephemeralPublicKey: String, reslove: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
+
+  @objc(finalizeAddCard:activationData:ephemeralPublicKey:resolve:rejecter:)
+  func finalizeAddCard(_ encryptedPassData: String, activationData: String, ephemeralPublicKey: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
     let addPaymentPassRequest = PKAddPaymentPassRequest()
     addPaymentPassRequest.encryptedPassData = Data(base64Encoded: encryptedPassData)
     addPaymentPassRequest.activationData = Data(base64Encoded: activationData)
@@ -61,10 +60,10 @@ class PaymentPass: NSObject {
     pkCompletionHandler!(addPaymentPassRequest)
     pkCompletionHandler = nil
     pkRequestCallback = nil
-    reslove(nil)
+    resolve(nil)
   }
-  
-  @objc(removeSuspendedCard:resolve:reject:)
+
+  @objc(removeSuspendedCard:resolve:rejecter:)
   func removeSuspendedCard(_ panReferenceId: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
     let passLibrary = PKPassLibrary()
     let allPaymentPasses = passLibrary.passes(of: .payment).compactMap({$0 as? PKPaymentPass}) + passLibrary.remotePaymentPasses()
@@ -92,6 +91,6 @@ extension PaymentPass: PKAddPaymentPassViewControllerDelegate {
       certArray.append(cert.base64EncodedString())
     }
 
-    pkRequestCallback!([["certificates": certArray, "nonce": nonce.base64EncodedString(), "nonce_signature": nonceSignature.base64EncodedString(), "app_version": appVersion, "device_type": "MOBILE_PHONE"]])
+    pkRequestCallback!([["certificates": certArray, "nonce": nonce.base64EncodedString(), "nonce_signature": nonceSignature.base64EncodedString(), "provisioning_app_version": appVersion, "device_type": "MOBILE_PHONE"]])
   }
 }
