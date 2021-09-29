@@ -1,8 +1,11 @@
 import Foundation
 import PassKit
 
-var pkRequestCallback: RCTResponseSenderBlock?;
-var pkCompletionHandler: ((PKAddPaymentPassRequest) -> Void)?;
+var pkAddPaymentErrorCallback: RCTResponseSenderBlock? = nil
+var pkAddPaymentSuccessCallback: RCTResponseSenderBlock? = nil
+var pkFinaliseSuccessCallback: RCTResponseSenderBlock? = nil
+var pkFinaliseErrorCallback: RCTResponseSenderBlock? = nil
+var pkCompletionHandler: ((PKAddPaymentPassRequest) -> Void)? = nil
 
 @objc(PaymentPass)
 class PaymentPass: NSObject {
@@ -27,7 +30,9 @@ class PaymentPass: NSObject {
 
   @objc(addPaymentPass:lastFour:paymentReferenceId:errorCallback:successCallback:)
   func addPaymentPass(_ cardHolderName: String, lastFour: String, paymentRefrenceId: String = "", errorCallback: @escaping RCTResponseSenderBlock, successCallback: @escaping RCTResponseSenderBlock) -> Void {
-    pkRequestCallback = successCallback
+    pkAddPaymentErrorCallback = errorCallback
+    pkAddPaymentSuccessCallback = successCallback
+
     DispatchQueue.main.async {
       let rootViewController = UIApplication.shared.delegate?.window??.rootViewController
       guard let requestConfiguration = PKAddPaymentPassRequestConfiguration(encryptionScheme: .ECC_V2) else {
@@ -50,17 +55,19 @@ class PaymentPass: NSObject {
     }
   }
 
-  @objc(finalizeAddCard:activationData:ephemeralPublicKey:resolve:rejecter:)
-  func finalizeAddCard(_ encryptedPassData: String, activationData: String, ephemeralPublicKey: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
+  @objc(finalizeAddCard:activationData:ephemeralPublicKey:errorCallback:successCallback:)
+  func finalizeAddCard(_ encryptedPassData: String, activationData: String, ephemeralPublicKey: String, errorCallback: @escaping RCTResponseSenderBlock, successCallback: @escaping RCTResponseSenderBlock) -> Void {
+    pkFinaliseErrorCallback = errorCallback
+    pkFinaliseSuccessCallback = successCallback
+
     let addPaymentPassRequest = PKAddPaymentPassRequest()
     addPaymentPassRequest.encryptedPassData = Data(base64Encoded: encryptedPassData)
     addPaymentPassRequest.activationData = Data(base64Encoded: activationData)
     addPaymentPassRequest.ephemeralPublicKey = Data(base64Encoded: ephemeralPublicKey)
 
-    pkCompletionHandler!(addPaymentPassRequest)
-    pkCompletionHandler = nil
-    pkRequestCallback = nil
-    resolve(nil)
+    pkCompletionHandler?(addPaymentPassRequest)
+    pkAddPaymentSuccessCallback = nil
+    pkAddPaymentErrorCallback = nil
   }
 
   @objc(removeSuspendedCard:resolve:rejecter:)
@@ -75,6 +82,17 @@ class PaymentPass: NSObject {
 
 extension PaymentPass: PKAddPaymentPassViewControllerDelegate {
   func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, didFinishAdding pass: PKPaymentPass?, error: Error?) {
+    if error == nil {
+      pkFinaliseSuccessCallback?([])
+    } else {
+      pkFinaliseErrorCallback?([error?.localizedDescription ?? ""])
+      pkAddPaymentErrorCallback?([error?.localizedDescription ?? ""])
+    }
+
+    pkFinaliseErrorCallback = nil
+    pkFinaliseSuccessCallback = nil
+    pkCompletionHandler = nil
+
     controller.dismiss(animated: true, completion: nil)
   }
 
@@ -91,6 +109,6 @@ extension PaymentPass: PKAddPaymentPassViewControllerDelegate {
       certArray.append(cert.base64EncodedString())
     }
 
-    pkRequestCallback!([["certificates": certArray, "nonce": nonce.base64EncodedString(), "nonce_signature": nonceSignature.base64EncodedString(), "provisioning_app_version": appVersion, "device_type": "MOBILE_PHONE"]])
+    pkAddPaymentSuccessCallback?([["certificates": certArray, "nonce": nonce.base64EncodedString(), "nonce_signature": nonceSignature.base64EncodedString(), "provisioning_app_version": appVersion, "device_type": "MOBILE_PHONE"]])
   }
 }

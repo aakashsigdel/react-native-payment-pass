@@ -22,15 +22,17 @@ type AddPaymentPass = (
   cardHolderName: string,
   lastFour: string,
   paymentReferenceId: string,
-  errorCallback: () => void,
+  errorCallback: (error: string) => void,
   successCallback: (params: DigitalWalletProvisionRequestParams) => void
 ) => Promise<void>;
 
 type FinalizeAddCard = (
   encryptedPassData: string,
   activationData: string,
-  ephemeralPublicKey: string
-) => Promise<void>;
+  ephemeralPublicKey: string,
+  errorCallback: (error: string) => void,
+  successCallback: () => void
+) => void;
 
 type RemoveSuspendedCard = (paymentReferenceId: string) => Promise<void>;
 
