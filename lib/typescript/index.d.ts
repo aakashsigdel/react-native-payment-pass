@@ -11,8 +11,8 @@ export interface DigitalWalletProvisionRequestParams {
     app_version: string;
 }
 declare type CanAddPaymentPass = (paymentRefrenceId: string) => Promise<AddPaymentPassStatus>;
-declare type AddPaymentPass = (cardHolderName: string, lastFour: string, paymentReferenceId: string, errorCallback: (error: string) => void, successCallback: (params: DigitalWalletProvisionRequestParams) => void) => Promise<void>;
-declare type FinalizeAddCard = (encryptedPassData: string, activationData: string, ephemeralPublicKey: string, errorCallback: (error: string) => void, successCallback: () => void) => void;
+declare type AddPaymentPass = (cardHolderName: string, lastFour: string, paymentReferenceId: string, successCallback: (params: DigitalWalletProvisionRequestParams) => void, errorCallback?: (error: string) => void) => void;
+declare type FinalizeAddCard = (encryptedPassData: string, activationData: string, ephemeralPublicKey: string, successCallback: () => void, errorCallback?: (error: string) => void) => void;
 declare type RemoveSuspendedCard = (paymentReferenceId: string) => Promise<void>;
 declare type PaymentPassType = {
     canAddPaymentPass: CanAddPaymentPass;
