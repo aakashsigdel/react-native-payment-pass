@@ -5,7 +5,7 @@ var pkAddPaymentErrorCallback: RCTResponseSenderBlock? = nil
 var pkAddPaymentSuccessCallback: RCTResponseSenderBlock? = nil
 var pkFinaliseSuccessCallback: RCTResponseSenderBlock? = nil
 var pkFinaliseErrorCallback: RCTResponseSenderBlock? = nil
-var pkCompletionHandler: ((PKAddPaymentPassRequest) -> Void)?;
+var pkCompletionHandler: ((PKAddPaymentPassRequest) -> Void)? = nil
 
 @objc(PaymentPass)
 class PaymentPass: NSObject {
