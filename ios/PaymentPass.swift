@@ -28,8 +28,8 @@ class PaymentPass: NSObject {
     }
   }
 
-  @objc(addPaymentPass:lastFour:paymentReferenceId:errorCallback:successCallback:)
-  func addPaymentPass(_ cardHolderName: String, lastFour: String, paymentRefrenceId: String = "", errorCallback: @escaping RCTResponseSenderBlock, successCallback: @escaping RCTResponseSenderBlock) -> Void {
+  @objc(addPaymentPass:lastFour:paymentReferenceId:successCallback:errorCallback:)
+  func addPaymentPass(_ cardHolderName: String, lastFour: String, paymentRefrenceId: String = "", successCallback: @escaping RCTResponseSenderBlock, errorCallback: @escaping RCTResponseSenderBlock) -> Void {
     pkAddPaymentErrorCallback = errorCallback
     pkAddPaymentSuccessCallback = successCallback
 
@@ -55,8 +55,9 @@ class PaymentPass: NSObject {
     }
   }
 
-  @objc(finalizeAddCard:activationData:ephemeralPublicKey:errorCallback:successCallback:)
-  func finalizeAddCard(_ encryptedPassData: String, activationData: String, ephemeralPublicKey: String, errorCallback: @escaping RCTResponseSenderBlock, successCallback: @escaping RCTResponseSenderBlock) -> Void {
+  @objc(finalizeAddCard:activationData:ephemeralPublicKey:successCallback:errorCallback:)
+  func finalizeAddCard(_ encryptedPassData: String, activationData: String, ephemeralPublicKey: String, successCallback: @escaping RCTResponseSenderBlock,
+    errorCallback: @escaping RCTResponseSenderBlock) -> Void {
     pkFinaliseErrorCallback = errorCallback
     pkFinaliseSuccessCallback = successCallback
 

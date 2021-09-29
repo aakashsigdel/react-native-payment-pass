@@ -22,16 +22,16 @@ type AddPaymentPass = (
   cardHolderName: string,
   lastFour: string,
   paymentReferenceId: string,
-  errorCallback: (error: string) => void,
-  successCallback: (params: DigitalWalletProvisionRequestParams) => void
-) => Promise<void>;
+  successCallback: (params: DigitalWalletProvisionRequestParams) => void,
+  errorCallback?: (error: string) => void
+) => void;
 
 type FinalizeAddCard = (
   encryptedPassData: string,
   activationData: string,
   ephemeralPublicKey: string,
-  errorCallback: (error: string) => void,
-  successCallback: () => void
+  successCallback: () => void,
+  errorCallback?: (error: string) => void
 ) => void;
 
 type RemoveSuspendedCard = (paymentReferenceId: string) => Promise<void>;
@@ -43,6 +43,42 @@ type PaymentPassType = {
   removeSuspendedCard: RemoveSuspendedCard;
 };
 
-const { PaymentPass } = NativeModules;
+const { PaymentPass: PaymentPassModule } = NativeModules;
+
+function noop(): void {}
+
+const addPaymentPass: AddPaymentPass = (
+  cardHolderName,
+  lastFour,
+  paymentReferenceId,
+  successCallback,
+  errorCallback
+) => {
+  PaymentPassModule.addPaymentPass(
+    cardHolderName,
+    lastFour,
+    paymentReferenceId,
+    successCallback,
+    errorCallback ? errorCallback : noop
+  );
+};
+
+const finalizeAddCard: FinalizeAddCard = (
+  encryptedPassData,
+  activationData,
+  ephemeralPublicKey,
+  successCallback,
+  errorCallback
+) => {
+  PaymentPassModule.finalizeAddCard(
+    encryptedPassData,
+    activationData,
+    ephemeralPublicKey,
+    successCallback,
+    errorCallback ? errorCallback : noop
+  );
+};
+
+const PaymentPass = { ...PaymentPassModule, addPaymentPass, finalizeAddCard };
 
 export default PaymentPass as PaymentPassType;

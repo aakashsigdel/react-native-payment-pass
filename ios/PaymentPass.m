@@ -11,16 +11,16 @@ RCT_EXTERN_METHOD(
                   addPaymentPass: (NSString *) cardHolderName
                   lastFour: (NSString *) lastFour
                   paymentReferenceId: (NSString *) paymentReferenceId
-                  errorCallback: (RCTResponseSenderBlock) errorCallback
                   successCallback: (RCTResponseSenderBlock)successCallback
+                  errorCallback: (RCTResponseSenderBlock) errorCallback
                   )
 
 RCT_EXTERN_METHOD(
                   finalizeAddCard: (NSString *) encryptedPassData
                   activationData: (NSString *) activationData
                   ephemeralPublicKey: (NSString *) ephemeralPublicKey
-                  errorCallback: (RCTResponseSenderBlock) errorCallback
                   successCallback: (RCTResponseSenderBlock)successCallback
+                  errorCallback: (RCTResponseSenderBlock) errorCallback
                   )
 
 RCT_EXTERN_METHOD(
