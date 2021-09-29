@@ -57,6 +57,9 @@ class PaymentPass: NSObject {
 
   @objc(finalizeAddCard:activationData:ephemeralPublicKey:errorCallback:successCallback:)
   func finalizeAddCard(_ encryptedPassData: String, activationData: String, ephemeralPublicKey: String, errorCallback: @escaping RCTResponseSenderBlock, successCallback: @escaping RCTResponseSenderBlock) -> Void {
+    pkFinaliseErrorCallback = errorCallback
+    pkFinaliseSuccessCallback = successCallback
+
     let addPaymentPassRequest = PKAddPaymentPassRequest()
     addPaymentPassRequest.encryptedPassData = Data(base64Encoded: encryptedPassData)
     addPaymentPassRequest.activationData = Data(base64Encoded: activationData)
