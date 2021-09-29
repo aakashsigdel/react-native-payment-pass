@@ -19,8 +19,8 @@ RCT_EXTERN_METHOD(
                   finalizeAddCard: (NSString *) encryptedPassData
                   activationData: (NSString *) activationData
                   ephemeralPublicKey: (NSString *) ephemeralPublicKey
-                  resolve: (RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject
+                  errorCallback: (RCTResponseSenderBlock) errorCallback
+                  successCallback: (RCTResponseSenderBlock)successCallback
                   )
 
 RCT_EXTERN_METHOD(
