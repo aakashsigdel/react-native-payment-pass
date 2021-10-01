@@ -43,9 +43,7 @@ class PaymentPass: NSObject {
       requestConfiguration.primaryAccountSuffix = lastFour
       // Since we only issue visa cards
       requestConfiguration.paymentNetwork = .visa
-      if(paymentRefrenceId.isEmpty) {
-        requestConfiguration.primaryAccountIdentifier = paymentRefrenceId
-      }
+      requestConfiguration.primaryAccountIdentifier = paymentRefrenceId
       guard let addPaymentPassViewController = PKAddPaymentPassViewController(requestConfiguration:
                                                                                 requestConfiguration, delegate: self) else {
         errorCallback(["BLOCKED"])
