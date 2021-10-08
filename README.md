@@ -1,6 +1,6 @@
 # react-native-payment-pass
 
-Novus react-native package to add card to apple wallet
+react-native package to add card to apple wallet
 
 ## Installation
 
@@ -15,7 +15,6 @@ import PaymentPass from "react-native-payment-pass";
 
 // ...
 
-const result = await PaymentPass.multiply(3, 7);
 ```
 
 ## Contributing
